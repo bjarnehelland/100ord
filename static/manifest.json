@@ -1,0 +1,11 @@
+{
+	"name": "100 ord",
+	"description": "100 ord på norsk",
+	"display": "standalone",
+	"start_url": "/",
+	"theme": {
+		"colors": {
+			"frame": "#f3f4f6"
+		}
+	}
+}

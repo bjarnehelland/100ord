@@ -1,4 +1,6 @@
 <script lang="ts">
+	export const ssr = false;
+
 	let allWords = [
 		'og',
 		'i',
@@ -116,6 +118,17 @@
 	let correctWordsCount = $derived(correctWords.length);
 	let avaliableWordsCount = $derived(avaliableWords.length);
 
+	let norwegianVoice: SpeechSynthesisVoice | null = null;
+	if (typeof window !== 'undefined') {
+		let voices = speechSynthesis.getVoices();
+		norwegianVoice = voices.find((voice) => voice.lang === 'nb-NO') ?? null;
+		speechSynthesis.addEventListener('voiceschanged', (ev) => {
+			voices = speechSynthesis.getVoices();
+			norwegianVoice = voices.find((voice) => voice.lang === 'nb-NO') ?? null;
+			console.log(norwegianVoice);
+		});
+	}
+
 	function toggleRange(rangeIndex: number) {
 		if (selectedRanges.includes(rangeIndex)) {
 			selectedRanges = selectedRanges.filter((i) => i !== rangeIndex);
@@ -158,6 +171,17 @@
 		isStarted = false;
 		completionTime = null;
 		startTime = null;
+	}
+
+	function speak() {
+		if (!norwegianVoice) {
+			console.error('No Norwegian voice found');
+			return;
+		}
+
+		const utterance = new SpeechSynthesisUtterance(word);
+		utterance.voice = norwegianVoice;
+		speechSynthesis.speak(utterance);
 	}
 </script>
 
@@ -220,7 +244,31 @@
 				</button>
 			</div>
 		{:else}
-			<p class="text-5xl">{word}</p>
+			<div class="flex flex-col items-center gap-4">
+				<p class="text-5xl">{word}</p>
+				{#if norwegianVoice}
+					<button
+						class="touch-manipulation rounded-lg bg-orange-500 px-4 py-2 text-white hover:bg-orange-600"
+						onclick={speak}
+						aria-label="Speak word"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-6 w-6"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+							/>
+						</svg>
+					</button>
+				{/if}
+			</div>
 		{/if}
 	</div>
 
